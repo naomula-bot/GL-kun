@@ -1,0 +1,23 @@
+# 環境設定・秘密情報
+.env
+backend/.env
+
+# Pythonキャッシュ
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# プロジェクトコンテキスト（個人設定のため除外）
+data/context.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

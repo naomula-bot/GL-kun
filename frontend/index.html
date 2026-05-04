@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GL-kun — 自動レビューシステム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🔍</span>
+        <span class="logo-text">GL-kun</span>
+        <span class="logo-sub">グループリーダー向け自動レビューシステム</span>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-tab="review">レビュー実行</button>
+        <button class="nav-btn" data-tab="context">プロジェクト設定</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ====== レビュー実行タブ ====== -->
+    <div id="tab-review" class="tab-content active">
+      <div class="panel-grid">
+
+        <!-- 入力パネル -->
+        <section class="panel input-panel">
+          <h2 class="panel-title">レビュー対象ドキュメント</h2>
+
+          <div class="form-group">
+            <label class="form-label" for="doc-type">ドキュメント種別</label>
+            <select id="doc-type" class="form-select">
+              <option value="basic_design">基本設計書</option>
+              <option value="test_spec">試験項目書</option>
+              <option value="test_result">試験結果報告書</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              ドキュメント本文
+              <span class="label-hint">（Markdown・テキスト形式で貼り付けてください）</span>
+            </label>
+            <textarea
+              id="doc-content"
+              class="form-textarea"
+              placeholder="ここにドキュメントの内容を貼り付けてください..."
+              rows="22"
+            ></textarea>
+          </div>
+
+          <div class="review-perspectives">
+            <span class="perspectives-label">レビュー観点：</span>
+            <span class="badge badge-pmbok">PMBOK</span>
+            <span class="badge badge-tera">Terasoluna</span>
+            <span class="badge badge-format">フォーマット</span>
+            <span class="badge badge-project">プロジェクト規約</span>
+            <span class="badge badge-issue">課題/障害</span>
+          </div>
+
+          <button id="btn-review" class="btn-primary" onclick="startReview()">
+            <span class="btn-icon">▶</span>
+            レビュー開始
+          </button>
+        </section>
+
+        <!-- 結果パネル -->
+        <section class="panel result-panel">
+          <div class="result-header">
+            <h2 class="panel-title">レビュー結果</h2>
+            <div class="result-actions">
+              <button class="btn-small" onclick="copyResult()" id="btn-copy" disabled>
+                📋 コピー
+              </button>
+              <button class="btn-small" onclick="clearResult()" id="btn-clear" disabled>
+                🗑 クリア
+              </button>
+            </div>
+          </div>
+
+          <div id="result-status" class="result-status hidden">
+            <div class="spinner"></div>
+            <span id="status-text">レビュー中...</span>
+          </div>
+
+          <div id="result-content" class="result-content">
+            <div class="result-placeholder">
+              <div class="placeholder-icon">📄</div>
+              <p>ドキュメントを入力して「レビュー開始」を押すと、</p>
+              <p>AI による自動レビューが表示されます。</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ====== プロジェクト設定タブ ====== -->
+    <div id="tab-context" class="tab-content hidden">
+      <div class="panel context-panel">
+        <h2 class="panel-title">プロジェクトコンテキスト設定</h2>
+        <p class="panel-desc">
+          ここに設定した情報はレビュー時に自動的に参照されます。
+          プロジェクト固有のルールや最近の課題を登録しておくことで、
+          より的確なレビューが行われます。
+        </p>
+
+        <div class="context-grid">
+          <div class="form-group">
+            <label class="form-label">
+              📋 プロジェクト概要
+              <span class="label-hint">システム概要・技術スタック・開発体制など</span>
+            </label>
+            <textarea
+              id="ctx-overview"
+              class="form-textarea"
+              rows="6"
+              placeholder="例：
+- システム名：○○業務管理システム
+- 技術スタック：Java 17 / Terasoluna 5.7 / Oracle DB
+- 開発体制：5名（PL1名、SE2名、PG2名）
+- フェーズ：基本設計レビュー中"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              📐 プロジェクト固有ルール・規約
+              <span class="label-hint">コーディング規約・命名規則・設計ルールなど</span>
+            </label>
+            <textarea
+              id="ctx-rules"
+              class="form-textarea"
+              rows="6"
+              placeholder="例：
+- テーブル名は英語スネークケース（例：user_master）
+- ServiceクラスはXxxServiceImpl命名必須
+- エラーメッセージはメッセージIDで管理
+- ER図はA3サイズで作成（draw.io使用）
+- 試験項目書はExcelテンプレートv2.3を使用"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              ⚠️ 最近の課題・障害・インシデント
+              <span class="label-hint">過去の不具合・教訓・注意事項など（レビューで重点確認される）</span>
+            </label>
+            <textarea
+              id="ctx-issues"
+              class="form-textarea"
+              rows="6"
+              placeholder="例：
+- [障害] 2024/03 ログイン機能でSQLインジェクション脆弱性が発覚→入力値検証を必ず確認
+- [課題] 前フェーズでER図とテーブル定義書の不整合が多発→両者の整合性を重点レビュー
+- [教訓] 非機能要件（性能目標）の設計への反映漏れが多い→性能要件の記載を確認
+- [注意] 試験項目の判定基準が曖昧なまま承認されたケースが複数→期待結果の具体性を確認"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              ✅ 追加チェックリスト
+              <span class="label-hint">このプロジェクト固有の確認事項</span>
+            </label>
+            <textarea
+              id="ctx-checklist"
+              class="form-textarea"
+              rows="5"
+              placeholder="例：
+- 個人情報を扱うテーブルには必ずアクセスログ設計があること
+- 外部API連携はタイムアウト設定（30秒）が設計されていること
+- バッチ処理は再実行可能な設計（冪等性）になっていること"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="context-actions">
+          <button class="btn-primary" onclick="saveContext()">
+            💾 設定を保存
+          </button>
+          <span id="save-status" class="save-status"></span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <span>GL-kun — Powered by Claude (Anthropic) | PMBOK & Terasoluna準拠レビュー</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
