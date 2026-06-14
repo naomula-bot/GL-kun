@@ -80,7 +80,7 @@ GL-kun/
 ## 技術スタック
 
 - **バックエンド**: Python / FastAPI / Anthropic SDK
-- **AI モデル**: Claude Opus 4.7（adaptive thinking + prompt caching）
+- **AI モデル**: Claude Opus 4.8（adaptive thinking + prompt caching）
 - **フロントエンド**: HTML / CSS / Vanilla JS（依存ライブラリなし）
 
 ## カスタマイズ

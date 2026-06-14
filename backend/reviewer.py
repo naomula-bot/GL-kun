@@ -140,7 +140,7 @@ async def stream_review(
     user_message = build_user_message(doc_type, doc_content, project_context)
 
     with client.messages.stream(
-        model="claude-opus-4-7",
+        model="claude-opus-4-8",
         max_tokens=8192,
         thinking={"type": "adaptive"},
         system=system_blocks,
